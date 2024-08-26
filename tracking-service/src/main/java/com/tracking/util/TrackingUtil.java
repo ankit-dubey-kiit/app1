@@ -34,7 +34,7 @@ public class TrackingUtil {
 				MessageDigest digest = MessageDigest.getInstance("SHA-256");
 				byte[] hashBytes = digest.digest(combinedString.getBytes(StandardCharsets.UTF_8));
 				String base32String = bytesToBase32(hashBytes);
-
+				base32String = sourceCountry.toUpperCase() +  destinationCountry.toUpperCase() + base32String;
 				trackingNumber = base32String.length() <= MAX_LENGTH ? base32String
 						: base32String.substring(0, MAX_LENGTH);
 				if (!issuedTrackingNumbers.containsKey(trackingNumber)) {
