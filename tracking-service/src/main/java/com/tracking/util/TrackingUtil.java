@@ -5,28 +5,33 @@ import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.stereotype.Component;
 
 import com.tracking.exception.CustomBadRequestException;
+import com.tracking.service.TrackingCacheService;
+
 
 @Component
 public class TrackingUtil {
 
 	private static final String BASE32_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	private static final int MAX_LENGTH = 16;
-
-	private static final ConcurrentMap<String, Boolean> issuedTrackingNumbers = new ConcurrentHashMap<>();
+	
+	private TrackingCacheService radisTrackingCacheService;
+    
+	public TrackingUtil(TrackingCacheService radisTrackingCacheService ) {
+    	this.radisTrackingCacheService = radisTrackingCacheService;
+    }
 
 	public String generateTrackingNumber(Map<String, String> params) {
 		String sourceCountry = params.get("origin_country_id");
 		String destinationCountry = params.get("destination_country_id");
+		String weight = params.get("weight");
 		String timestamp = String.valueOf(Instant.now().toEpochMilli());
 		String uuid = UUID.randomUUID().toString();
 
-		String combinedString = String.join("|", sourceCountry, destinationCountry, timestamp, uuid);
+		String combinedString = String.join("|", weight, timestamp, uuid);
 
 		String trackingNumber;
 		do {
@@ -37,12 +42,11 @@ public class TrackingUtil {
 				base32String = sourceCountry.toUpperCase() +  destinationCountry.toUpperCase() + base32String;
 				trackingNumber = base32String.length() <= MAX_LENGTH ? base32String
 						: base32String.substring(0, MAX_LENGTH);
-				if (!issuedTrackingNumbers.containsKey(trackingNumber)) {
-					issuedTrackingNumbers.put(trackingNumber, true);
-					return trackingNumber;
-				}
-				combinedString = String.join("|", sourceCountry, destinationCountry, timestamp,
-						UUID.randomUUID().toString());
+				if (!radisTrackingCacheService.isTrackingNumberExists(trackingNumber)) {
+					radisTrackingCacheService.saveTrackingNumber(trackingNumber);
+                    return trackingNumber;
+                }
+				combinedString = String.join("|", weight, timestamp, uuid);
 
 			} catch (Exception e) {
 				throw new CustomBadRequestException("Failed to generate Tracking Number");
@@ -68,4 +72,5 @@ public class TrackingUtil {
 			throw new CustomBadRequestException("Failed to generate Tracking Number");
 		}
 	}
+	
 }
