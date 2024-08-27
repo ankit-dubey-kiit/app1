@@ -1,10 +1,9 @@
 package com.tracking.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.TimeUnit;
 
 import com.tracking.exception.CustomBadRequestException;
 import com.tracking.service.TrackingCacheService;
@@ -12,8 +11,11 @@ import com.tracking.service.TrackingCacheService;
 @Service
 public class TrackingCacheServiceImpl implements TrackingCacheService {
 
-    @Autowired
     private RedisTemplate<String, String> redisTemplate;
+    
+    public TrackingCacheServiceImpl(RedisTemplate<String, String> redisTemplate ) {
+    	this.redisTemplate = redisTemplate;
+    }
 
     private static final String TRACKING_NUMBER_PREFIX = "tracking_number:";
 
