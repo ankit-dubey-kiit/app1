@@ -9,8 +9,7 @@ convert it to bytes
 encode those bytes to Base32 
 
 Service Implementation 
-
-To implement the above, I am planning to create a spring boot application with jpa dependency to use jpa or hibernate for database interaction 
+spring boot application with jpa dependency to use jpa or hibernate for database interaction 
 
  
 
